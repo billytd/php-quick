@@ -1,0 +1,179 @@
+body, html {
+    background: #efeaea;
+    margin: 0;
+}
+body, html, * {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #555;
+}
+body {
+    margin-bottom: 20px;
+}
+label, fieldset {
+    font-size: 14px;
+}
+input {
+    font-size: 12px;
+    font-family: menlo, Courier;
+}
+h1 {
+    background: #666;
+    color: #e6e1e1;
+    padding: 0 10px;
+    margin: 0;
+    font-size: 40px;
+    font-weight: normal;
+    letter-spacing: 2px;
+    font-family: Georgia;
+}
+    h1 span {
+        color: #e6e1e1;
+        font-size: 12px;
+    }
+    h1 span a {
+        color: #D4CFCF;
+    }
+form#codeForm {
+    margin:30px 10px 0;
+    background: #e6e1e1;
+}
+fieldset {
+    display: block;
+    border: none;
+    border-top: solid 2px #999;
+    margin: 20px 10px 0;
+    background: #e6e1e1;
+}
+legend {
+    background: #e6e1e1;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    border-top: solid 2px #999;
+}
+.fieldsetWrapper {
+    float: left;
+    margin: 0;
+    width: 100%;
+}
+.fieldsetWrapper fieldset {
+    margin: -10px 0 0 0;
+    background: none;
+}
+.fieldsetWrapper.left,
+.fieldsetWrapper.right {
+    width: 50%;
+}
+.fieldsetWrapper.left fieldset {
+    /*margin-right: 1px;*/
+    padding-right: 5px;
+}
+.fieldsetWrapper.right fieldset {
+    /*padding-left: 5px;*/
+}
+#output {
+    overflow: scroll;
+}
+legend {
+    /*margin-left: -6px;*/
+    font-size: 18px;
+    font-weight: normal;
+    padding: 0 12px;
+}
+textarea,
+pre {
+    font-family: menlo, Courier;
+    color: #555;
+    padding: 4px;
+    margin: 0;
+    display: block;
+    min-height: 200px;
+    height: auto;
+    font-size: 12px;
+    line-height: 17px;
+    background: #fff9f9;
+    border: solid 1px #999;
+    overflow: visible;
+}
+textarea {
+    color: #008833;
+    width: 100%;
+    min-height: 210px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+pre {
+    color: #3300ff;
+}
+input {
+    font-family: menlo, Courier;
+    font-weight: normal;
+    color: #409117;
+    border: solid 1px #999;
+    padding: 4px;
+    font-size: 12px;
+    background: #fff9f9;
+}
+input[type=submit] {
+    width: 100%;
+    background: #666;
+    color: #e6e1e1;
+    border: none;
+    padding: 5px 0;
+    margin: 0;
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+label {
+    padding: 2px 5px 10px 0;
+    display: inline-block;
+    font-size: 12px;
+    min-height: 28px;
+    vertical-align: baseline;
+}
+label#labelUrl {
+    width: auto;
+}
+label#labelUrl input {
+    width: 400px;
+}
+#outputError p {
+    color: #cc3333;
+}
+
+#TheCurrentTime p {
+    display: inline-block;
+    width: auto;
+    margin: 0 0 10px;
+    padding: 8px 0;
+    transition: all .2s;
+}
+#TheCurrentTime input,
+#TimeStampConverter label .formatted {
+    border-color: #e6e1e1;
+    background: none;
+    transition: all .2s;
+}
+#TheCurrentTime p:hover input,
+#TimeStampConverter label:hover .formatted {
+    border-color: #999;
+    background: #fff;
+}
+#TimeStampConverter .formatted {
+    width: 230px;
+    display: none;
+}
+
+.hide {
+    display: none;
+}
+.clear {
+    width: 100%;
+    line-height: 1px;
+    height: 1px;
+    clear: both;
+}
