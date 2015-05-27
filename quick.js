@@ -1,14 +1,14 @@
 (function ($) {
+    var date = new Date();
     var settings = {
-        ts_server: Math.round(new Date().getTime() / 1000),
         process_url: window.location,
         key_trigger_delay: 350,
         ajax_min_interval: 600
     };
 
     var state = {
-        ts_last_request: new Date().getTime(),
-        ts_lastKey_up: new Date().getTime(),
+        ts_last_request: date.getTime(),
+        ts_lastKey_up: date.getTime(),
         last_submitted_string: '',
         request_in_progress: false,
         poller: null,
@@ -17,7 +17,10 @@
 
     $.phpQuick = function(options) {
         settings = $.extend(settings, options);
-        settings.ts_offset = settings.ts_server - (new Date().getTime() / 1000);
+
+        if (settings.valid_post) {
+            updateDomOnSuccessResponse(settings.page_request_result);
+        }
 
         initListeners();
         refreshTimeUi();
@@ -25,56 +28,49 @@
         return this;
     };
 
+    function displayOutputContainer() {
+        $('#InputContainer').addClass('left');
+        $('#OutputContainer').removeClass('hide');
+    }
+
     function initListeners() {
-        $('textarea').keyup(function(){
-            if ($(this).val() != state.last_submitted_string){
-                state.last_submitted_string = $(this).val();
-                initRequest($(this).val(), $('select[name=type]').val());
-            } else {
-                state.last_submitted_string = $(this).val();
-            }
+        $('textarea').keyup(function() {
+            initRequest($(this).val(), $('select[name=type]').val());
         });
 
-        $('#TheCurrentTime p').hover(function(){
+        $('#TheCurrentTime p').hover(function() {
             state.is_over_time = true;
         }, function(){
             state.is_over_time = false;
             refreshTimeUi();
         });
 
-        $("#TheCurrentTime input, #TimeStampConverter input.formatted").click(function () {
+        $(".selectable").click(function () {
            $(this).select();
-        });
-
-        $('#TheCurrentTime p').mouseout(function() {
-            $('#TheCurrentTime input').blur();
-        });
-
-        $('#TimeStampConverter label').mouseout(function() {
-            $('#TimeStampConverter input.formatted').blur();
+        }).parent().mouseout(function() {
+            $(this).children('.selectable').blur();
         });
 
         $('#TimeStampConverter input[name=ts]').keyup(function() {
             var ts = $(this).val();
 
             if (parseInt(ts) === parseInt(ts, 10) && parseInt(ts) == ts) {
-                // valid integer entered, format it
-
-                $('#TimeStampConverter input.formatted').show().val(new Date(ts * 1000).toUTCString());
-                $('#TimeStampConverter .note').hide();
+                // valid integer entered, format and display it:
+                $('#TimeStampConverter input.selectable').removeClass('hide').val(new Date(ts * 1000).toUTCString());
+                $('#TimeStampConverter .note').addClass('hide');
             } else {
-                $('#TimeStampConverter input.formatted').hide();
-                $('#TimeStampConverter .note').show();
+                $('#TimeStampConverter input.selectable').addClass('hide');
+                $('#TimeStampConverter .note').removeClass('hide');
             }
-        })
+        });
     }
 
     function refreshTimeUi() {
+        var date = new Date();
         if (!state.is_over_time) {
-            var date = new Date();
 
             $('#TheCurrentTime em').text(date.toUTCString());
-            $('#TheCurrentTime input').val(Math.round((date.getTime() / 1000) + settings.ts_offset));
+            $('#TheCurrentTime input').val(Math.round(date.getTime() / 1000));
 
             setTimeout(function() {
                 refreshTimeUi();
@@ -83,93 +79,90 @@
     }
 
     function initRequest(code, type) {
-        if (state.request_in_progress) {
+        if (state.request_in_progress || code == state.last_submitted_string) {
             return;
         }
-
-        var ts_now = new Date().getTime();
 
         clearTimeout(state.poller);
 
-        var delay = false;
+        var ts_now        = new Date().getTime();
+        var timeout_delay = false;
 
         if ((ts_now - state.ts_last_request) < settings.ajax_min_interval) {
             // queue
-            delay = settings.ajax_min_interval - (ts_now - state.ts_last_request);
+            timeout_delay = settings.ajax_min_interval - (ts_now - state.ts_last_request);
         } else if ((ts_now - state.ts_lastKey_up) < settings.key_trigger_delay) {
             // queue
-            delay = settings.key_trigger_delay - (ts_now - state.ts_lastKey_up);
+            timeout_delay = settings.key_trigger_delay - (ts_now - state.ts_lastKey_up);
         } else {
-            // OK, dispatch
+            // dispatch request now
             makeRequest(code, type);
-
             return;
         }
 
+
         state.poller = setTimeout(function() {
             initRequest($('textarea').val(), $("select[name=type]").val());
-        }, delay );
+        }, timeout_delay );
     }
 
     function makeRequest(code, type) {
-        state.request_in_progress = true;
-        state.ts_last_request     = new Date().getTime();
+        code = code.trim();
+
+        if (code == '') {
+            updateDomOnSuccessResponse({success: false});
+            return;
+        }
+
+        state.ts_last_request       = new Date().getTime();
+        state.last_submitted_string = code;
+        state.request_in_progress   = true;
 
         $.ajax({
-            type: "POST",
-            url: settings.process_url + "?ajax",
-            data: {'code':code,'type':type},
+            type: 'POST',
+            url: settings.process_url + '?ajax',
+            data: {'code': code, 'type': type},
             dataType: 'json',
+            error: function(data) {
+                setErrorMessage(data.responseText.replace(/in \/.*\([0-9]+\) \: eval\(\)'d/i, 'in your'));
+            },
             success: function(data) {
                 updateDomOnSuccessResponse(data);
             },
             complete: function() {
                 state.request_in_progress = false;
-            },
-            error: function(data) {
-                if ($('#enableErrors').attr('checked') == 'checked') {
-                    if ($('#outputError').length < 1){
-                        $('div.fieldsetWrapper').addClass('left').after('<div class="fieldsetWrapper right"><fieldset class="right"><legend>Out</legend><pre id="output"></pre><div id="outputError"></div></fieldset></div>');
-                    }
-                    var errorMsg = data.responseText.replace(/in \/.*\([0-9]+\) \: eval\(\)'d/i, 'in your');
-                    $('#outputError').html('<p>' + errorMsg + '</p>');
-                }
             }
         });
     }
 
+    function setErrorMessage(message) {
+        if ($('#enableErrors').attr('checked') == 'checked') {
+            $('#outputError').removeClass('hide').text(message);
+        } else {
+            $('#outputError').addClass('hide');
+        }
+    }
+
     function updateDomOnSuccessResponse(data) {
+        displayOutputContainer();
+
         // Display the elapsed php execution time:
         if (data.elapsed_time_formatted) {
-            if ($('#ExecutionTime').lenght < 1) {
-                $('pre#output').after('<p id="ExecutionTime">Execution time: <strong></strong></p>');
-            }
+            $('#ExecutionTime').removeClass('hide');
             $('#ExecutionTime strong').text(data.elapsed_time_formatted);
         } else {
-            $('#ExecutionTime').remove();
+            $('#ExecutionTime').addClass('hide');
         }
 
         // Display the process output:
         if (data.success === true) {
-            if ($('pre#output').length < 1) {
-                $('div.fieldsetWrapper').addClass('left').after('<div class="fieldsetWrapper right"><fieldset class="right"><legend>Out</legend><pre id="output"></pre><div id="outputError"></div></fieldset></div>');
-            }
             $('pre#output').html(data.body);
         } else {
             $('pre#output').html('');
         }
 
         // Display the error string:
-        if (data.error && data.error != '') {
-            if ($('#enableErrors').attr('checked') == 'checked') {
-                if ($('#outputError').length < 1) {
-                    $('div.fieldsetWrapper').addClass('left').after('<div class="fieldsetWrapper right"><fieldset class="right"><legend>Out</legend><pre id="output"></pre><div id="outputError"></div></fieldset></div>');
-                }
-                $('#outputError').html('<p>' + data.error + '</p>');
-            }
-        } else {
-            $('#outputError').html('');
-        }
+        setErrorMessage(data.error ? data.error : '');
     }
 
 }(jQuery));

@@ -26,13 +26,13 @@ h1 {
     letter-spacing: 2px;
     font-family: Georgia;
 }
-    h1 span {
-        color: #e6e1e1;
-        font-size: 12px;
-    }
-    h1 span a {
-        color: #D4CFCF;
-    }
+h1 span {
+    color: #e6e1e1;
+    font-size: 12px;
+}
+h1 span a {
+    color: #D4CFCF;
+}
 form#codeForm {
     margin:30px 10px 0;
     background: #e6e1e1;
@@ -65,17 +65,12 @@ legend {
     width: 50%;
 }
 .fieldsetWrapper.left fieldset {
-    /*margin-right: 1px;*/
     padding-right: 5px;
-}
-.fieldsetWrapper.right fieldset {
-    /*padding-left: 5px;*/
 }
 #output {
     overflow: scroll;
 }
 legend {
-    /*margin-left: -6px;*/
     font-size: 18px;
     font-weight: normal;
     padding: 0 12px;
@@ -141,7 +136,7 @@ label#labelUrl {
 label#labelUrl input {
     width: 400px;
 }
-#outputError p {
+#outputError {
     color: #cc3333;
 }
 
@@ -150,22 +145,18 @@ label#labelUrl input {
     width: auto;
     margin: 0 0 10px;
     padding: 8px 0;
-    transition: all .2s;
 }
-#TheCurrentTime input,
-#TimeStampConverter label .formatted {
+input.selectable {
     border-color: #e6e1e1;
     background: none;
     transition: all .2s;
 }
-#TheCurrentTime p:hover input,
-#TimeStampConverter label:hover .formatted {
+*:hover > input.selectable {
     border-color: #999;
     background: #fff;
 }
-#TimeStampConverter .formatted {
+input.medium {
     width: 230px;
-    display: none;
 }
 
 .hide {
